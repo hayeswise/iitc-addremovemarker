@@ -13,7 +13,7 @@ See the [User Guide](https://github.com/hayeswise/iitc-poimarker/wiki/User-Guide
 # Installation
 I recommend you install Tampermonkey if you are using Chrome or Greasemonkey if you are using Firefox.
 
-Download the latest version [**here**](https://github.com/hayeswise/iitc-poimarker/raw/master/wise-poimarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page.  Click the install/reinstall button.
+Download the latest version [**here**](https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
 
 ## Updating
 _From the IITC website:_
