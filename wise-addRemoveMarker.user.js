@@ -4,7 +4,7 @@
 // @category       Layer
 // @version        0.2016.11.26
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
-// @description    Automatically marks and un-marks portals of interest.  Also includes a Add Marker and Remove Marker control to the toolbox.
+// @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
 // @downloadURL	   https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
 // @include        https://*.ingress.com/intel*
