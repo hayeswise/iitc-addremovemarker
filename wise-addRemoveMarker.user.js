@@ -76,27 +76,6 @@ function wrapper() {
         console.log(fname + ": Done.");
     };
     //
-    // If the portal is already marked on the map, return true; otherwise,
-    // return false.
-    //
-    self.isMarked = function (portalDetails) {
-        var fname = "plugin.addRemoveMarker.isMarked";
-        var theLayers; // Leaflet Layer[]
-        theLayers = window.plugin.drawTools.drawnItems.getLayers();
-        index = theLayers.findIndex(function(layer, i, array) {
-            var foundMarker = false,
-                item = {};
-            if (layer instanceof L.Marker) {
-                item.latLng = layer.getLatLng();
-                item.color = layer.options.icon.options.color;
-                foundMarker = ((item.latLng.lat == portalDetails.latE6 / 1E6) &&
-                               (item.latLng.lng == portalDetails.lngE6 / 1E6));
-            }
-            return foundMarker;
-        });
-        return (index != -1);
-    };
-    //
     // Remove the marker on the portal shown in the sidebar portal details.
     //
     self.removeMarker = function () {
@@ -161,8 +140,9 @@ function wrapper() {
             window.plugin.drawTools.save();
         }
     };
-
-    // setup function called by IITC
+	//
+    // Setup function called by IITC.
+	//
     self.setup = function init() {
         var fname = "plugin.addRemoveMarker.setup";
         var controlsHTML;
