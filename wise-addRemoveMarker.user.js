@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        0.2016.11.26
+// @version        1.0.0.0
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -61,6 +61,19 @@ function wrapper() {
         };
         window.plugin.drawTools.import([item]); // requires an array of items
         window.plugin.drawTools.save();
+    };
+    //
+    // Save the portal details.
+    //
+    // @param data Object containing the guid, portal object, portalData object, and a portalDetails object.
+    //
+    self.checkPortalDetailsUpdated = function (data) {
+        var fname = "plugin.addRemoveMarker.checkPortalDetailsUpdated";
+        var title;
+        self.portalDataInPortalDetails = data;
+        title = data.portalData.title ? data.portalData.title : "[NO PORTAL DATA FOR portalDetailsUpdated RUNHOOK]";
+        console.log(fname + "(data.guid:=" + data.guid + ", data.portalData.title:=" + title + ")");
+        console.log(fname + ": Done.");
     };
     //
     // If the portal is already marked on the map, return true; otherwise,
@@ -146,8 +159,6 @@ function wrapper() {
             window.plugin.drawTools.drawnItems.clearLayers();
             window.plugin.drawTools.import(data);
             window.plugin.drawTools.save();
-        } else {
-            console.log(fname + ": Marker not found on portal " + title);
         }
     };
 
@@ -162,19 +173,18 @@ function wrapper() {
         // Link to Google Material icons.
         $("head").append("<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family\=Material+Icons\">");
 		// Add toolbox controls.
-        controlsHTML = 
-            "<div><span id=\"addremovemarker-controls\"style=\"display:block;color:#03fe03;\">" +
-				"<a id=\"addMarker\" onclick=\"window.plugin.addRemoveMarker.addMarker();false;\" title=\"Click to add a portal marker.\">" +
+        controlsHTML = "<div><span id=\"arm-controls\"style=\"display:block;color:#03fe03;\">" +
+				"<a id=\"arm-addMarker\" onclick=\"window.plugin.addRemoveMarker.addMarker();false;\" title=\"Click to add a portal marker.\">" +
 				"<i class=\"material-icons\" style=\"font-size:16px;color:#ffce00;\">add_location</i> Add Marker</a>" +
-                " &nbsp;<a id=\"removeMarker\" onclick=\"window.plugin.addRemoveMarker.removeMarker();false;\" title=\"Click to remove the portal marker.\">" +
+                " &nbsp;<a id=\"arm-removeMarker\" onclick=\"window.plugin.addRemoveMarker.removeMarker();false;\" title=\"Click to remove the portal marker.\">" +
                 "<i class=\"material-icons\" style=\"font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);\">format_color_reset</i>" +
                 " Remove Marker</a>" +
              "</span></div>";
         $("#toolbox").append(controlsHTML);
-		
+		// Add hook for portal details updated.
+		window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
         console.log(fname + ": Done.");
-        // delete setup to ensure init can't be run again
-        delete self.setup;
+        delete self.setup; // delete setup to ensure init can't be run again
     };
     // IITC plugin setup
     if (window.iitcLoaded && typeof self.setup === "function") {
