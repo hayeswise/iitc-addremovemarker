@@ -16,9 +16,7 @@ I recommend you install Tampermonkey if you are using Chrome or Greasemonkey if 
 Download the latest version [**here**](https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
 
 ## Updating
-_From the IITC website:_
-
-_If IITC is already installed, it's easy to update in most cases:_
+If the plugin is already installed, it's easy to update in most cases.  Either click on the download link, above, or follow the these instructions from the IITC website:
 
 ### Chrome and Tampermonkey
 
