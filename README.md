@@ -3,7 +3,9 @@ Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion
 
 [Ingress Planner](http://www.ingressplanner.net/) is highly recommended so that you can manage seperate plans.  You might want to create a plan that contains the portals-of-interest of the other faction.
 
-See the [User Guide](https://github.com/hayeswise/iitc-addremovemarker/wiki/).
+![POI Marker controls](https://github.com/hayeswise/iitc-addremovemarker/raw/master/doc/addRemoveMarker-controls.png)
+A short [User Guide](https://github.com/hayeswise/iitc-addremovemarker/wiki/) is available..
+
 
 # Prerequistites
 * IITC ([https://IITC.me](https://iitc.me/))
