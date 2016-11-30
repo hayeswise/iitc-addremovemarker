@@ -1,7 +1,7 @@
 # IITC Add Marker and Remove Marker
 Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion](https://iitc.me/) web application.  The plugin  provides an add marker and remove marker controls (links) in the IITC toolbox so that you can add or remove markers without using the Draw Tools drop-pin and delete tools.
 
-[Ingress Planner](http://www.ingressplanner.net/) is highly recommended so that you can manage seperate plans.  You might want to create a plan that contains the portals-of-interest of the other faction.
+[Ingress Planner](http://www.ingressplanner.net/) is highly recommended so that you can manage seperate plans.
 
 ![POI Marker controls](https://github.com/hayeswise/iitc-addremovemarker/raw/master/doc/addRemoveMarker-controls.png)
 A short [User Guide](https://github.com/hayeswise/iitc-addremovemarker/wiki/) is available..
