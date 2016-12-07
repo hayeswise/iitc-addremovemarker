@@ -96,10 +96,11 @@ function wrapper() {
         // 2. Find the marker
 		marker = window.plugin.drawTools.drawnItems.getLayers().find (function(layer) {
 			var latLng;
-            if (layer.getLatLng) {
             latLng = layer.getLatLng();
-            return (latLng.lat == portalDetails.latE6 / 1E6) &&
-                   (latLng.lng == portalDetails.lngE6 / 1E6);
+			if (layer instanceof L.Marker) {
+				latLng = layer.getLatLng();
+				return (latLng.lat == portalDetails.latE6 / 1E6) &&
+				       (latLng.lng == portalDetails.lngE6 / 1E6);
             } else {
                 return false;
             }
