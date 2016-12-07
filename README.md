@@ -28,6 +28,4 @@ _Open the Tampermonkey menu and choose "Check for userscript updates". If you ha
 
 _Open the Greasemonkey menu and choose "Manage user scripts". Now click the cog icon and choose "Check for updates". However, sometimes Greasemonkey fails to update all scripts. Check the date+time listed at the start of the description (e.g. "[jonatkins-2013-08-23-042102]") and if any have failed to update then manually download from the list below. Once updated, reload the Intel map and the new version will be active._
 
-# Known Issues
-* Sometimes the IITC map and the Planning and Portals tabs get out of sync.  This may be due to computer memory limitations.
 
