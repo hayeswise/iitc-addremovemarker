@@ -73,14 +73,14 @@ function wrapper() {
         console.log(fname + "(data.guid:=" + data.guid + ", data.portalData.title:=" + title + ")");
         console.log(fname + ": Done.");
     };
-     //
+    //
     // Removes the marker (map pin) on the portal shown in the sidebar portal details.
     //
     self.removeMarker = function () {
         var fname = "plugin.poiMarker.removeMarker";
         var count = 0,
             data = [], // For layer data
-			maker = null, //Leaflet Layer()
+            maker = null, //Leaflet Layer()
             portalDetails,
             refreshLayers = false,
             title;
@@ -94,34 +94,34 @@ function wrapper() {
         console.log(fname + ": guid:=" + self.portalDataInPortalDetails.guid + ", title:=" + title + ", have portal details=" + !!self.portalDataInPortalDetails);
         portalDetails = self.portalDataInPortalDetails.portalDetails;
         // 2. Find the marker
-		marker = window.plugin.drawTools.drawnItems.getLayers().find (function(layer) {
-			var latLng;
-            if (layer.getLatLng) {
-            latLng = layer.getLatLng();
-            return (latLng.lat == portalDetails.latE6 / 1E6) &&
-                   (latLng.lng == portalDetails.lngE6 / 1E6);
+        marker = window.plugin.drawTools.drawnItems.getLayers().find (function(layer) {
+            var latLng;
+            if (layer instanceof L.Marker) {
+                latLng = layer.getLatLng();
+                return (latLng.lat == portalDetails.latE6 / 1E6) &&
+                    (latLng.lng == portalDetails.lngE6 / 1E6);
             } else {
                 return false;
             }
-		});
-		// 3. If marker found, remove the marker, save, run draw hooks, and notify the ingress planner if it's being used.
-		if (marker) { // if not undefined
-		    console.log(fname + ": Removing marker for portal " + title);
-			window.plugin.drawTools.drawnItems.removeLayer(marker);
+        });
+        // 3. If marker found, remove the marker, save, run draw hooks, and notify the ingress planner if it's being used.
+        if (marker) { // if not undefined
+            console.log(fname + ": Removing marker for portal " + title);
+            window.plugin.drawTools.drawnItems.removeLayer(marker);
             window.plugin.drawTools.save();
             runHooks('pluginDrawTools', {
                 event: 'import' //event: 'layersDeleted'
             });
-			if (window.plugin.ingressplanner) {
-				window.plugin.ingressplanner.sendMessage('update-drawing',localStorage['plugin-draw-tools-layer']);
-			}
+            if (window.plugin.ingressplanner) {
+                window.plugin.ingressplanner.sendMessage('update-drawing',localStorage['plugin-draw-tools-layer']);
+            }
         } else {
             console.log(fname + ": Portal marker not found. Portal title: " + title);
         }
     };
-	//
+    //
     // Setup function called by IITC.
-	//
+    //
     self.setup = function init() {
         var fname = "plugin.addRemoveMarker.setup";
         var controlsHTML;
@@ -131,17 +131,17 @@ function wrapper() {
         }
         // Link to Google Material icons.
         $("head").append('<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family\=Material+Icons">');
-		// Add toolbox controls.
+        // Add toolbox controls.
         controlsHTML = '<div><span id="arm-controls"style="display:block;color:#03fe03;">' +
-				'<a id="arm-addMarker" onclick="window.plugin.addRemoveMarker.addMarker();false;" title="Click to add a portal marker.">' +
-				'<i class="material-icons" style="font-size:16px;color:#ffce00;">add_location</i> Add Marker</a>' +
-                ' &nbsp;<a id="arm-removeMarker" onclick="window.plugin.addRemoveMarker.removeMarker();false;" title="Click to remove the portal marker.">' +
-                '<i class="material-icons" style="font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>' +
-                ' Remove Marker</a>' +
-             '</span></div>';
+            '<a id="arm-addMarker" onclick="window.plugin.addRemoveMarker.addMarker();false;" title="Click to add a portal marker.">' +
+            '<i class="material-icons" style="font-size:16px;color:#ffce00;">add_location</i> Add Marker</a>' +
+            ' &nbsp;<a id="arm-removeMarker" onclick="window.plugin.addRemoveMarker.removeMarker();false;" title="Click to remove the portal marker.">' +
+            '<i class="material-icons" style="font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>' +
+            ' Remove Marker</a>' +
+            '</span></div>';
         $("#toolbox").append(controlsHTML);
-		// Add hook for portal details updated.
-		window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
+        // Add hook for portal details updated.
+        window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
         console.log(fname + ": Done.");
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
