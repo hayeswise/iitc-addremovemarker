@@ -2,8 +2,8 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.0.0.0
-// @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
+// @version        1.2016.12.6
+// @namespace      https://github.com/hayeswise/iitc-addremovemarker
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
 // @downloadURL	   https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -15,26 +15,24 @@
 // @grant          none
 // ==/UserScript==
 // MIT License, Copyright (c) 2016 Brian Hayes ("Hayeswise")
-// For more information, visit https://github.com/hayeswise/iitc-addremovemarker.
+// For more information, visit https://github.com/hayeswise/iitc-addremovemarker
 
+//
+// Standard IITC wrapper pattern (and JavaScript encapsulation pattern).
+// See last three lines of this file where it is used.
+//
 function wrapper() {
     // In case IITC is not available yet, define the base plugin object
     if (typeof window.plugin !== "function") {
         window.plugin = function () {};
     }
-    // Base context for plugin
+    // Base context/namespace for plugin
     window.plugin.addRemoveMarker = function () {};
     var self = window.plugin.addRemoveMarker;
 
     // Plugin level properties
     self.portalDataInPortalDetails = null;
-    self.autoMarkEnabled = false;
-    self.autoRemoveMarkEnabled = false;
-    self.poiColor = "#AAAAAA";
-    // Portals of interest conditions (OR conditions)
-    self.minHubLinks = 6;
-    self.minPortalLevel = 7.5;
-    self.minAXAs = 1;
+
     //
     // Add marker
     //
@@ -75,17 +73,18 @@ function wrapper() {
         console.log(fname + "(data.guid:=" + data.guid + ", data.portalData.title:=" + title + ")");
         console.log(fname + ": Done.");
     };
-    //
-    // Remove the marker on the portal shown in the sidebar portal details.
+     //
+    // Removes the marker (map pin) on the portal shown in the sidebar portal details.
     //
     self.removeMarker = function () {
-        var fname = "plugin.addRemoveMarker.removeMarker";
+        var fname = "plugin.poiMarker.removeMarker";
         var count = 0,
             data = [], // For layer data
+			maker = null, //Leaflet Layer()
             portalDetails,
             refreshLayers = false,
             title;
-        // 1. Get the marker data. In this case, the addRemoveMarker.checkPortalDetailLoaded() hook
+        // 1. Get the marker data. In this case, the poiMarker.checkPortalDetailLoaded() hook
         //    will have saved it when it was loaded into the sidebar portal details area.
         if (!self.portalDataInPortalDetails) {
             alert("Select a portal to load the portal details before attempting to remove a marker.");
@@ -94,50 +93,30 @@ function wrapper() {
         title = (self.portalDataInPortalDetails && self.portalDataInPortalDetails.portalDetails.title) ? self.portalDataInPortalDetails.portalDetails.title : "[NO PORTAL DATA]";
         console.log(fname + ": guid:=" + self.portalDataInPortalDetails.guid + ", title:=" + title + ", have portal details=" + !!self.portalDataInPortalDetails);
         portalDetails = self.portalDataInPortalDetails.portalDetails;
-        // 2. Save all but the marker.
-        window.plugin.drawTools.drawnItems.eachLayer(function (layer) { // drawnItems is a leaflet FeatureGroup.  See window.plugin.drawTools.boot().
-            var foundMarker = false,
-                item = {};
-            count++;
-            if (layer instanceof L.GeodesicCircle || layer instanceof L.Circle) {
-                item.type = 'circle';
-                item.latLng = layer.getLatLng();
-                item.radius = layer.getRadius();
-                item.color = layer.options.color;
-            } else if (layer instanceof L.GeodesicPolygon || layer instanceof L.Polygon) {
-                item.type = 'polygon';
-                item.latLngs = layer.getLatLngs();
-                item.color = layer.options.color;
-            } else if (layer instanceof L.GeodesicPolyline || layer instanceof L.Polyline) {
-                item.type = 'polyline';
-                item.latLngs = layer.getLatLngs();
-                item.color = layer.options.color;
-            } else if (layer instanceof L.Marker) {
-                item.type = 'marker';
-                item.latLng = layer.getLatLng();
-                item.color = layer.options.icon.options.color;
-                foundMarker = ((item.latLng.lat == portalDetails.latE6 / 1E6) &&
-                               (item.latLng.lng == portalDetails.lngE6 / 1E6));
-           } else {
-                console.warn('Unknown layer type when saving draw tools layer');
-                return; //.eachLayer 'continue'
-            }
-            if (!foundMarker) {
-                data.push(item);
+        // 2. Find the marker
+		marker = window.plugin.drawTools.drawnItems.getLayers().find (function(layer) {
+			var latLng;
+            if (layer.getLatLng) {
+            latLng = layer.getLatLng();
+            return (latLng.lat == portalDetails.latE6 / 1E6) &&
+                   (latLng.lng == portalDetails.lngE6 / 1E6);
             } else {
-                console.log(fname + " [" + count + "] " + JSON.stringify(item) + ", foundMarker=" + foundMarker);
-                refreshLayers = true; // We do not break from the loop since we need to save all the other items/layers for the refresh
+                return false;
             }
-        });
-        // TODO: Investigate using Leaflet removeLayer (use drawnItems.getLayers() with drawnItems.removeLayer(...)
-        if (refreshLayers) {
-            console.log(fname + ": Marker found on portal " + title);
-            // 3. Save the layer data (which doesn't contain the marker) to local storage
-            localStorage['plugin-draw-tools-layer'] = JSON.stringify(data); //  markers and other stuff saved here
-            // 4. Refresh the layers
-            window.plugin.drawTools.drawnItems.clearLayers();
-            window.plugin.drawTools.import(data);
+		});
+		// 3. If marker found, remove the marker, save, run draw hooks, and notify the ingress planner if it's being used.
+		if (marker) { // if not undefined
+		    console.log(fname + ": Removing marker for portal " + title);
+			window.plugin.drawTools.drawnItems.removeLayer(marker);
             window.plugin.drawTools.save();
+            runHooks('pluginDrawTools', {
+                event: 'import' //event: 'layersDeleted'
+            });
+			if (window.plugin.ingressplanner) {
+				window.plugin.ingressplanner.sendMessage('update-drawing',localStorage['plugin-draw-tools-layer']);
+			}
+        } else {
+            console.log(fname + ": Portal marker not found. Portal title: " + title);
         }
     };
 	//
@@ -147,24 +126,24 @@ function wrapper() {
         var fname = "plugin.addRemoveMarker.setup";
         var controlsHTML;
         if (window.plugin.drawTools === undefined) {
-            alert("IITC plugin \"Add and Remove Marker\" requires IITC plugin \"draw tools\".");
+            alert('IITC plugin "Add and Remove Marker" requires IITC plugin "draw tools".');
             return;
         }
         // Link to Google Material icons.
-        $("head").append("<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/icon?family\=Material+Icons\">");
+        $("head").append('<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family\=Material+Icons">');
 		// Add toolbox controls.
-        controlsHTML = "<div><span id=\"arm-controls\"style=\"display:block;color:#03fe03;\">" +
-				"<a id=\"arm-addMarker\" onclick=\"window.plugin.addRemoveMarker.addMarker();false;\" title=\"Click to add a portal marker.\">" +
-				"<i class=\"material-icons\" style=\"font-size:16px;color:#ffce00;\">add_location</i> Add Marker</a>" +
-                " &nbsp;<a id=\"arm-removeMarker\" onclick=\"window.plugin.addRemoveMarker.removeMarker();false;\" title=\"Click to remove the portal marker.\">" +
-                "<i class=\"material-icons\" style=\"font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);\">format_color_reset</i>" +
-                " Remove Marker</a>" +
-             "</span></div>";
+        controlsHTML = '<div><span id="arm-controls"style="display:block;color:#03fe03;">' +
+				'<a id="arm-addMarker" onclick="window.plugin.addRemoveMarker.addMarker();false;" title="Click to add a portal marker.">' +
+				'<i class="material-icons" style="font-size:16px;color:#ffce00;">add_location</i> Add Marker</a>' +
+                ' &nbsp;<a id="arm-removeMarker" onclick="window.plugin.addRemoveMarker.removeMarker();false;" title="Click to remove the portal marker.">' +
+                '<i class="material-icons" style="font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>' +
+                ' Remove Marker</a>' +
+             '</span></div>';
         $("#toolbox").append(controlsHTML);
 		// Add hook for portal details updated.
 		window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
         console.log(fname + ": Done.");
-        delete self.setup; // delete setup to ensure init can't be run again
+        delete self.setup; // Delete setup to ensure init can't be run again.
     };
     // IITC plugin setup
     if (window.iitcLoaded && typeof self.setup === "function") {
