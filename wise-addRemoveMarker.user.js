@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2016.12.14
+// @version        1.2016.12.15
 // @namespace      https://github.com/hayeswise/iitc-addremovemarker
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -21,7 +21,7 @@
 // Standard IITC wrapper pattern (and JavaScript encapsulation pattern).
 // See last three lines of this file where it is used.
 //
-function wrapper() {
+function wrapper(plugin_info) {
     // Polyfill Array.find if not available
     // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
     if (!Array.prototype.find) {
@@ -177,7 +177,7 @@ function wrapper() {
     };
     //
     // Removes the marker (map pin) on the portal shown in the sidebar portal details.
-	// Only one marker is removed at a time.  If for some reason multiple markers have 
+	// Only one marker is removed at a time.  If for some reason multiple markers have
 	// been put at the same location, multiple removes will need to be done.
     //
     self.removeMarker = function () {
@@ -245,6 +245,7 @@ function wrapper() {
         console.log(fname + ": Done.");
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
+    self.setup.info = plugin_info;
     // IITC plugin setup
     if (window.iitcLoaded && typeof self.setup === "function") {
         self.setup();
@@ -255,6 +256,11 @@ function wrapper() {
     }
 }
 
+//
+// Add as script
+//
+var info = {};
+if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) info.script = { version: GM_info.script.version, name: GM_info.script.name, description: GM_info.script.description };
 var script = document.createElement("script");
-script.appendChild(document.createTextNode("(" + wrapper + ")();"));
+script.appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));
 (document.body || document.head || document.documentElement).appendChild(script);
