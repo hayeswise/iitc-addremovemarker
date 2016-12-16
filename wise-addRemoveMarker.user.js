@@ -68,7 +68,7 @@ function wrapper() {
     // @returns A Leaflet layer object.
     //
     self.addItem = function(item) {
-        var fname = namespace + ".addItemAsLayer";
+        var fname = namespace + ".addItem";
         var layer = null;
         var extraOpt = {};
         if (item.color) extraOpt.color = item.color;
