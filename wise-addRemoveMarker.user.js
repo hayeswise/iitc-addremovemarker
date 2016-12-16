@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2016.12.13
+// @version        1.2016.12.14
 // @namespace      https://github.com/hayeswise/iitc-addremovemarker
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -22,7 +22,7 @@
 // See last three lines of this file where it is used.
 //
 function wrapper() {
-	// Polyfill Array.find if not available
+    // Polyfill Array.find if not available
     // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
     if (!Array.prototype.find) {
         Object.defineProperty(Array.prototype, 'find', {
@@ -57,6 +57,7 @@ function wrapper() {
     // Base context/namespace for plugin
     window.plugin.addRemoveMarker = function () {};
     var self = window.plugin.addRemoveMarker;
+    var namespace = "plugin.addRemoveMarker";
 
     // Plugin level properties
     self.portalDataInPortalDetails = null;
@@ -66,7 +67,7 @@ function wrapper() {
     // @param item An object contain data for the layer.
     // @returns A Leaflet layer object.
     //
-    self.addItemAsLayer = function(item) {
+    self.addItem = function(item) {
         var fname = namespace + ".addItemAsLayer";
         var layer = null;
         var extraOpt = {};
@@ -94,50 +95,51 @@ function wrapper() {
         }
         if (layer) {
             window.plugin.drawTools.drawnItems.addLayer(layer);
+			//runHooks('pluginDrawTools', {event: 'import'});
+			runHooks('pluginDrawTools', {
+    			event: 'layerCreated',
+    			layer: layer
+    		}); // Per draw-tools line #665 the map.on('draw:created', ...) function
         }
-        runHooks('pluginDrawTools', {event: 'import'});
+
         return layer;
     };
     //
     // Adds a portal marker (map pin) if the selected portal is not already marked.
-    // @param item Optional. Item object with properties describing the item to be added.
     // @returns a Leaflet layer object corresponding to the added portal marker
     //
-    self.addMarker = function (/*item*/) {
-        var fname = namespace + ".addMarker";
-        var count = 0,
-            data = [], // For layer data
-            item,
-            layer = null,
-            portalDetails,
-            title;
-        if (arguments.length > 0) {
-            layer = self.addItemAsLayer(arguments[0]);
-        } else {
-            if (!self.portalDataInPortalDetails) {
-                alert("Select a portal to load the portal details before attempting to add a marker.");
-            } else if (!self.isMarked(self.portalDataInPortalDetails)) {
-                title = (self.portalDataInPortalDetails && self.portalDataInPortalDetails.portalDetails.title) ? self.portalDataInPortalDetails.portalDetails.title : "[NO PORTAL DATA]";
-                console.log(fname + ": guid:=" + self.portalDataInPortalDetails.guid + ", title:=" + title + ", have portal details=" + !!self.portalDataInPortalDetails);
-                portalDetails = self.portalDataInPortalDetails.portalDetails;
-                item = {
-                    type: 'marker',
-                    latLng: {
-                        lat: portalDetails.latE6 / 1E6,
-                        lng: portalDetails.lngE6 / 1E6
-                    },
-                };
-                layer = self.addItemAsLayer(item);
-                //window.plugin.drawTools.import([item]); // requires an array of items, import() includes runHooks('pluginDrawTools', {event: 'import'}); //REMOVE IF CODE WORKS
-
-                runHooks('pluginDrawTools',{event:'layerCreated',layer:layer});  // Per draw-tools line #665 the map.on('draw:created', ...) function
-            }
-        }
-        if (layer !== null) {
-			console.log(fname + ": calling window.plugin.drawTools.save();");
-            window.plugin.drawTools.save();
-        }
-        return layer;
+    self.addMarker = function () {
+    	var fname = namespace + ".addMarker";
+    	var count = 0,
+    	data = [], // For layer data
+		isMarked,
+    	item,
+    	layer = null,
+    	portalDetails,
+    	title;
+    	if (!self.portalDataInPortalDetails) {
+    		alert("Select a portal to load the portal details before attempting to add a marker.");
+			return null;
+    	}
+		isMarked = self.isMarked(self.portalDataInPortalDetails.portalDetails);
+		title = (self.portalDataInPortalDetails && self.portalDataInPortalDetails.portalDetails.title) ? self.portalDataInPortalDetails.portalDetails.title : "[NO PORTAL DATA]";
+    	console.log(fname + ": guid:=" + self.portalDataInPortalDetails.guid + ", title:=" + title + ", have portal details=" + !!self.portalDataInPortalDetails + ", isMarked=" + isMarked);
+		if (!isMarked) {
+    		portalDetails = self.portalDataInPortalDetails.portalDetails;
+    		item = {
+    			type: 'marker',
+    			latLng: {
+    				lat: portalDetails.latE6 / 1E6,
+    				lng: portalDetails.lngE6 / 1E6
+    			},
+    		};
+    		layer = self.addItem(item);  // calls runhooks
+    	}
+    	if (layer !== null) {
+    		console.log(fname + ": calling window.plugin.drawTools.save();");
+    		window.plugin.drawTools.save();
+    	}
+    	return layer;
     };
     //
     // Save the portal details.
@@ -150,9 +152,8 @@ function wrapper() {
         self.portalDataInPortalDetails = data;
         title = data.portalData.title ? data.portalData.title : "[NO PORTAL DATA FOR portalDetailsUpdated RUNHOOK]";
         console.log(fname + "(data.guid:=" + data.guid + ", data.portalData.title:=" + title + ")");
-        console.log(fname + ": Done.");
     };
-	//
+    //
     // If the portal is already marked on the map, return true; otherwise,
     // return false.
     //
@@ -165,16 +166,19 @@ function wrapper() {
                 item = {};
             if (layer instanceof L.Marker) {
                 item.latLng = layer.getLatLng();
-                item.color = layer.options.icon.options.color;
+//				console.log (fname + ": layer.getLatLng()=" + JSON.stringify(item.latLng) + "portalDetails.latE6=" + portalDetails.latE6 + ", portalDetails.lngE6=" + portalDetails.lngE6);
                 foundMarker = ((item.latLng.lat == portalDetails.latE6 / 1E6) &&
-                               (item.latLng.lng == portalDetails.lngE6 / 1E6)); //TODO might be possible to use the color attribute to determine if previously auto-marked; but, it would be better to have some layer meta-data
+                               (item.latLng.lng == portalDetails.lngE6 / 1E6));
+//				console.log (fname + ": foundMarker=" + foundMarker + ", layer.getLatLng()=" + JSON.stringify(item.latLng) + "portalDetails.latE6=" + portalDetails.latE6 + ", portalDetails.lngE6=" + portalDetails.lngE6);
             }
             return foundMarker;
         });
         return (index != -1);
     };
-     //
+    //
     // Removes the marker (map pin) on the portal shown in the sidebar portal details.
+	// Only one marker is removed at a time.  If for some reason multiple markers have 
+	// been put at the same location, multiple removes will need to be done.
     //
     self.removeMarker = function () {
         var fname = namespace + ".removeMarker";
@@ -193,7 +197,7 @@ function wrapper() {
         title = (self.portalDataInPortalDetails && self.portalDataInPortalDetails.portalDetails.title) ? self.portalDataInPortalDetails.portalDetails.title : "[NO PORTAL DATA]";
         console.log(fname + ": guid:=" + self.portalDataInPortalDetails.guid + ", title:=" + title + ", have portal details=" + !!self.portalDataInPortalDetails);
         portalDetails = self.portalDataInPortalDetails.portalDetails;
-        // 2. Find the marker
+        // 2. Find the first marker with the same latitude and longitude.
         marker = window.plugin.drawTools.drawnItems.getLayers().find (function(layer) {
             var latLng;
             if (layer instanceof L.Marker) {
@@ -209,8 +213,8 @@ function wrapper() {
             console.log(fname + ": Removing marker for portal " + title);
             window.plugin.drawTools.drawnItems.removeLayer(marker);
             runHooks('pluginDrawTools',{event:'layersDeleted'}); // Per draw-tools line #670 in the map.on('draw:deleted', ...) function
-			console.log(fname + ": calling window.plugin.drawTools.save();");
-			window.plugin.drawTools.save();
+            console.log(fname + ": calling window.plugin.drawTools.save();");
+            window.plugin.drawTools.save();
         } else {
             console.log(fname + ": Portal marker not found. Portal title: " + title);
         }
@@ -219,7 +223,7 @@ function wrapper() {
     // Setup function called by IITC.
     //
     self.setup = function init() {
-        var fname = "plugin.addRemoveMarker.setup";
+        var fname = namespace + ".addRemoveMarker.setup";
         var controlsHTML;
         if (window.plugin.drawTools === undefined) {
             alert('IITC plugin "Add and Remove Marker" requires IITC plugin "draw tools".');
