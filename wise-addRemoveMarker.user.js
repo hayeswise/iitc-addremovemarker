@@ -2,8 +2,8 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2016.12.15
-// @namespace      https://github.com/hayeswise/iitc-addremovemarker
+// @version        1.2017.01.13
+// @self.namespace      https://github.com/hayeswise/iitc-addremovemarker/
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
 // @downloadURL	   https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -22,53 +22,28 @@
 // See last three lines of this file where it is used.
 //
 function wrapper(plugin_info) {
-    // Polyfill Array.find if not available
-    // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
-    if (!Array.prototype.find) {
-        Object.defineProperty(Array.prototype, 'find', {
-            value: function(predicate) {
-                'use strict';
-                if (this === null) {
-                    throw new TypeError('Array.prototype.find called on null or undefined');
-                }
-                if (typeof predicate !== 'function') {
-                    throw new TypeError('predicate must be a function');
-                }
-                var list = Object(this);
-                var length = list.length >>> 0;
-                var thisArg = arguments[1];
-                var value;
-
-                for (var i = 0; i < length; i++) {
-                    value = list[i];
-                    if (predicate.call(thisArg, value, i, list)) {
-                        return value;
-                    }
-                }
-                return undefined;
-            }
-        });
-    }
-
+    'use strict';
     // In case IITC is not available yet, define the base plugin object
     if (typeof window.plugin !== "function") {
         window.plugin = function () {};
     }
     // Base context/namespace for plugin
-    window.plugin.addRemoveMarker = function () {};
+    window.plugin.addRemoveMarker = function () {
+		var that = this;
+	};
     var self = window.plugin.addRemoveMarker;
-    var namespace = "plugin.addRemoveMarker";
+	self.namespace = "addRemoveMarker";
 
     // Plugin level properties
     self.portalDataInPortalDetails = null;
 
-    //
-    // Adds a layer item (e.g., a marker) to the map.  Copied from plugin.drawTools.import.
-    // @param item An object contain data for the layer.
-    // @returns A Leaflet layer object.
-    //
+    /**
+     * Adds a layer item (e.g., a marker) to the map.  Copied from plugin.drawTools.import.
+     * @param item An object contain data for the layer.
+     * @returns A Leaflet layer object.
+     */
     self.addItem = function(item) {
-        var fname = namespace + ".addItem";
+        var fname = self.namespace + ".addItem";
         var layer = null;
         var extraOpt = {};
         if (item.color) extraOpt.color = item.color;
@@ -104,12 +79,12 @@ function wrapper(plugin_info) {
 
         return layer;
     };
-    //
-    // Adds a portal marker (map pin) if the selected portal is not already marked.
-    // @returns a Leaflet layer object corresponding to the added portal marker
-    //
+    /**
+     * Adds a portal marker (map pin) if the selected portal is not already marked.
+     * @returns a Leaflet layer object corresponding to the added portal marker
+     */
     self.addMarker = function () {
-    	var fname = namespace + ".addMarker";
+    	var fname = self.namespace + ".addMarker";
     	var count = 0,
     	data = [], // For layer data
 		isMarked,
@@ -141,11 +116,12 @@ function wrapper(plugin_info) {
     	}
     	return layer;
     };
-    //
-    // Save the portal details.
-    //
-    // @param data Object containing the guid, portal object, portalData object, and a portalDetails object.
-    //
+
+    /**
+     * Save the portal details.
+     *
+     * @param data Object containing the guid, portal object, portalData object, and a portalDetails object.
+     */
     self.checkPortalDetailsUpdated = function (data) {
         var fname = "plugin.addRemoveMarker.checkPortalDetailsUpdated";
         var title;
@@ -153,12 +129,12 @@ function wrapper(plugin_info) {
         title = data.portalData.title ? data.portalData.title : "[NO PORTAL DATA FOR portalDetailsUpdated RUNHOOK]";
         console.log(fname + "(data.guid:=" + data.guid + ", data.portalData.title:=" + title + ")");
     };
-    //
-    // If the portal is already marked on the map, return true; otherwise,
-    // return false.
-    //
+
+    /**
+     * Returns true if the portal is already marked on the map; otherwise, returns false.
+     */
     self.isMarked = function (portalDetails) {
-        var fname = namespace + ".isMarked";
+        var fname = self.namespace + ".isMarked";
         var theLayers; // Leaflet Layer[]
         theLayers = window.plugin.drawTools.drawnItems.getLayers();
         index = theLayers.findIndex(function(layer, i, array) {
@@ -175,13 +151,13 @@ function wrapper(plugin_info) {
         });
         return (index != -1);
     };
-    //
-    // Removes the marker (map pin) on the portal shown in the sidebar portal details.
-	// Only one marker is removed at a time.  If for some reason multiple markers have
-	// been put at the same location, multiple removes will need to be done.
-    //
+    /**
+     * Removes the marker (map pin) on the portal shown in the sidebar portal details.
+	 * Only one marker is removed at a time.  If for some reason multiple markers have
+	 * been put at the same location, multiple removes will need to be done.
+     */
     self.removeMarker = function () {
-        var fname = namespace + ".removeMarker";
+        var fname = self.namespace + ".removeMarker";
         var count = 0,
             data = [], // For layer data
             maker = null, //Leaflet Layer()
@@ -219,11 +195,35 @@ function wrapper(plugin_info) {
             console.log(fname + ": Portal marker not found. Portal title: " + title);
         }
     };
-    //
-    // Setup function called by IITC.
-    //
+
+    /**
+	 * Returns the DOM elements containing the plugin controls to be appended to the IITC toolbox.
+	 * <br>
+	 * Controls from other plugins with class "wise-toolbox-control" will be grouped into one subsection (same div tag).
+	 * @returns {Object} Object suitable for a jQuery `append()`.
+	 */
+
+    self.getToolboxControls = function () {
+		var	pluginControl,
+            controlsHtml;
+		controlsHtml = '<span id="addRemoveMarker-controls" style="display:block;color:#03fe03;">' +
+            '<a id="addRemoveMarker-addMarker" onclick="window.plugin.addRemoveMarker.addMarker();false;" title="Click to add a portal marker.">' +
+            '<i class="material-icons" style="font-size:16px;color:#ffce00;">add_location</i> Add Marker</a>&nbsp; ' +
+            '<a id="addRemoveMarker-removeMarker" onclick="window.plugin.addRemoveMarker.removeMarker();false;" title="Click to remove the portal marker.">' +
+            '<i class="material-icons" style="font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>' +
+            ' Remove Marker</a>' +
+            '</span>';
+		pluginControl = new ToolboxControlSection(controlsHtml, "wise-toolbox-control-section", "wise-toolbox-control");
+		pluginControl.attr("id", self.namespace + "-controls");
+		pluginControl = pluginControl.mergeWithFamily();
+		return pluginControl;
+    };
+
+    /**
+     * Setup function called by IITC.
+     */
     self.setup = function init() {
-        var fname = namespace + ".addRemoveMarker.setup";
+        var fname = self.namespace + ".addRemoveMarker.setup";
         var controlsHTML;
         if (window.plugin.drawTools === undefined) {
             alert('IITC plugin "Add and Remove Marker" requires IITC plugin "draw tools".');
@@ -231,22 +231,101 @@ function wrapper(plugin_info) {
         }
         // Link to Google Material icons.
         $("head").append('<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family\=Material+Icons">');
+		// Standard sytling for "wise" family of toolbox controls
+		$("<style>")
+			.prop("type", "text/css")
+			.html("div.wise-toolbox-control-section {color:#00C5FF;text-align:center;width:fit-content;border-top: 1px solid #20A8B1;border-bottom: 1px solid #20A8B1;}")
+        .appendTo("head");
         // Add toolbox controls.
-        controlsHTML = '<div><span id="arm-controls"style="display:block;color:#03fe03;">' +
-            '<a id="arm-addMarker" onclick="window.plugin.addRemoveMarker.addMarker();false;" title="Click to add a portal marker.">' +
-            '<i class="material-icons" style="font-size:16px;color:#ffce00;">add_location</i> Add Marker</a>' +
-            ' &nbsp;<a id="arm-removeMarker" onclick="window.plugin.addRemoveMarker.removeMarker();false;" title="Click to remove the portal marker.">' +
-            '<i class="material-icons" style="font-size:16px;color:#ffce00;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>' +
-            ' Remove Marker</a>' +
-            '</span></div>';
-        $("#toolbox").append(controlsHTML);
+        $("#toolbox").append(self.getToolboxControls());
         // Add hook for portal details updated.
         window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
         console.log(fname + ": Done.");
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
+
+    /*******************************************************************************************************************
+     * ToolboxControlSection Class
+     ******************************************************************************************************************/
+	/**
+	 * Creates a new ToolboxControlSection.
+	 *
+	 * @class
+	 * @param {String|Element|Text|Array|jQuery} content A object suitable for passing to `jQuery.append()`: a
+	 * 	DOM element, text node, array of elements and text nodes, HTML string, or jQuery object to insert at the end of
+	 *	each element in the set of matched elements.
+	 * @param {String} controlSectionClass The class name for a section of controls, typically in a `div` tag.
+	 * @param {String} [controlClass] An optional class name of a simple control or collection of controls.
+	 */
+	var ToolboxControlSection = function (content, controlSectionClass, controlClass) {
+		this.controlSectionClass = controlSectionClass;
+		this.controlClass = controlClass;
+		this.merged = false;
+		this.jQueryObj = jQuery('<div>').append(content).addClass(controlSectionClass);
+		//@todo: move the styles to a CSS class definition and add to the document in a style tag; but remember to provide the -moved class definition
+		};
+
+   	/**
+	 * See jQuery `.attr()` function.
+	 *
+	 * @returns {String}
+	 */
+	 ToolboxControlSection.prototype.attr = function (attributeNameOrAttributes, valueOrFunction) {
+         if (typeof valueOrFunction === 'undefined') {
+             return this.jQueryObj.attr(attributeNameOrAttributes);
+         } else {
+             return this.jQueryObj.attr(attributeNameOrAttributes, valueOrFunction);
+         }
+	};
+
+	/**
+	 * Appends toolbox controls with the same toolbox control section class and toolbox control class.
+	 */
+	ToolboxControlSection.prototype.mergeWithFamily = function () {
+		var controlFamily,
+            that;
+		if (!this.merged) {
+			that = this;
+			controlFamily = jQuery('.' + this.controlSectionClass);
+			if (controlFamily.length > 0) {
+				controlFamily.each(function() {
+					var jQobj = jQuery(this);
+					jQobj.css("border-style", "none");
+					that.jQueryObj.append(jQobj.removeClass(that.controlSectionClass).addClass(that.controlSectionClass + "-moved")); // remove oringal section so any subsequent merges have a single control section to deal with
+				});
+				this.merged = true;
+			}
+			if (typeof this.controlClass !== 'undefined') {
+				controlFamily = jQuery(':not(.' + this.controlSectionClass + ') .' + this.controlClass);
+				if (controlFamily.length > 0) {
+					controlFamily.each(function() {
+						that.jQueryObj.append(jQuery(this));
+					});
+					this.merged = true;
+				}
+			}
+		}
+		return this.jQueryObj;
+	};
+
+	/**
+	 * Override valueOf so that we get the desired behavior of getting the jQuery object when we access an object
+	 * directly.  For example,
+	 * ```
+	 * $("#toolbox").append(new ToolboxControlSection(html, "myfamily-control-section", "myfamily-control").mergeWithFamily();
+	 * ```
+	 *
+	 * @returns {Object} jQuery object.
+	 */
+	 ToolboxControlSection.prototype.valueOf = function () {
+		return this.jQueryObj;
+	};
+
+	// IITC plugin setup.
+    // Set a setup.info property. The data will be used in the About IITC dialog in the section listing the
+    // installed plugins.  The plugin_info comes from the Greasemonkey/Tampermonkey comments at the top of
+    // this file and is passed into the wrapper function when the script is added to the web page, below.
     self.setup.info = plugin_info;
-    // IITC plugin setup
     if (window.iitcLoaded && typeof self.setup === "function") {
         self.setup();
     } else if (window.bootPlugins) {
