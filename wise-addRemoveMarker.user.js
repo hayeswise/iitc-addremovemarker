@@ -162,7 +162,7 @@ function wrapper(plugin_info) {
         // 1. Get the marker data. In this case, the poiMarker.checkPortalDetailLoaded() hook
         //    will have saved it when it was loaded into the sidebar portal details area.
         if (!self.portalDataInPortalDetails) {
-            alert("Select a portal to load the portal details before attempting to remove a marker.");
+            alert("Please select a portal and wait for the portal details to be displayed before attempting to remove a marker.");
             return;
         }
         title = (self.portalDataInPortalDetails && self.portalDataInPortalDetails.portalDetails.title) ? self.portalDataInPortalDetails.portalDetails.title : "[NO PORTAL DATA]";
