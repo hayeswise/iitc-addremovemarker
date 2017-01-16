@@ -22,7 +22,7 @@
 // See last three lines of this file where it is used.
 //
 function wrapper(plugin_info) {
-    "use strict";
+    //"use strict";
     // In case IITC is not available yet, define the base plugin object
     if (typeof window.plugin !== "function") {
         window.plugin = function () {};
