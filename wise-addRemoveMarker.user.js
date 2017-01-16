@@ -2,8 +2,8 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2017.01.13
-// @self.namespace      https://github.com/hayeswise/iitc-addremovemarker/
+// @version        1.2017.01.131
+// @self.spacename      https://github.com/hayeswise/iitc-addremovemarker/
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
 // @downloadURL	   https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -27,12 +27,11 @@ function wrapper(plugin_info) {
     if (typeof window.plugin !== "function") {
         window.plugin = function () {};
     }
-    // Base context/namespace for plugin
+    // Base context/spacename for plugin
     window.plugin.addRemoveMarker = function () {
-		var that = this;
 	};
     var self = window.plugin.addRemoveMarker;
-	self.namespace = "addRemoveMarker";
+	self.spacename = "addRemoveMarker";
 
     // Plugin level properties
     self.portalDataInPortalDetails = null;
@@ -43,7 +42,7 @@ function wrapper(plugin_info) {
      * @returns A Leaflet layer object.
      */
     self.addItem = function(item) {
-        var fname = self.namespace + ".addItem";
+        var fname = self.spacename + ".addItem";
         var layer = null;
         var extraOpt = {};
         if (item.color) extraOpt.color = item.color;
@@ -84,7 +83,7 @@ function wrapper(plugin_info) {
      * @returns a Leaflet layer object corresponding to the added portal marker
      */
     self.addMarker = function () {
-    	var fname = self.namespace + ".addMarker";
+    	var fname = self.spacename + ".addMarker";
     	var count = 0,
     	data = [], // For layer data
 		isMarked,
@@ -93,7 +92,7 @@ function wrapper(plugin_info) {
     	portalDetails,
     	title;
     	if (!self.portalDataInPortalDetails) {
-    		alert("Select a portal to load the portal details before attempting to add a marker.");
+    		alert("Please select a portal and wait for the portal details to be displayed before attempting to add a marker.");
 			return null;
     	}
 		isMarked = self.isMarked(self.portalDataInPortalDetails.portalDetails);
@@ -123,7 +122,7 @@ function wrapper(plugin_info) {
      * @param data Object containing the guid, portal object, portalData object, and a portalDetails object.
      */
     self.checkPortalDetailsUpdated = function (data) {
-        var fname = "plugin.addRemoveMarker.checkPortalDetailsUpdated";
+        var fname = self.spacename + ".checkPortalDetailsUpdated";
         var title;
         self.portalDataInPortalDetails = data;
         title = data.portalData.title ? data.portalData.title : "[NO PORTAL DATA FOR portalDetailsUpdated RUNHOOK]";
@@ -134,8 +133,9 @@ function wrapper(plugin_info) {
      * Returns true if the portal is already marked on the map; otherwise, returns false.
      */
     self.isMarked = function (portalDetails) {
-        var fname = self.namespace + ".isMarked";
-        var theLayers; // Leaflet Layer[]
+        var fname = self.spacename + ".isMarked";
+        var index,
+			theLayers; // Leaflet Layer[]
         theLayers = window.plugin.drawTools.drawnItems.getLayers();
         index = theLayers.findIndex(function(layer, i, array) {
             var foundMarker = false,
@@ -157,10 +157,10 @@ function wrapper(plugin_info) {
 	 * been put at the same location, multiple removes will need to be done.
      */
     self.removeMarker = function () {
-        var fname = self.namespace + ".removeMarker";
+        var fname = self.spacename + ".removeMarker";
         var count = 0,
             data = [], // For layer data
-            maker = null, //Leaflet Layer()
+            marker = null, //Leaflet Layer()
             portalDetails,
             refreshLayers = false,
             title;
@@ -214,7 +214,7 @@ function wrapper(plugin_info) {
             ' Remove Marker</a>' +
             '</span>';
 		pluginControl = new ToolboxControlSection(controlsHtml, "wise-toolbox-control-section", "wise-toolbox-control");
-		pluginControl.attr("id", self.namespace + "-controls");
+		pluginControl.attr("id", self.spacename + "-controls");
 		pluginControl = pluginControl.mergeWithFamily();
 		return pluginControl;
     };
@@ -223,7 +223,7 @@ function wrapper(plugin_info) {
      * Setup function called by IITC.
      */
     self.setup = function init() {
-        var fname = self.namespace + ".addRemoveMarker.setup";
+        var fname = self.spacename + ".addRemoveMarker.setup";
         var controlsHTML;
         if (window.plugin.drawTools === undefined) {
             alert('IITC plugin "Add and Remove Marker" requires IITC plugin "draw tools".');
