@@ -18,7 +18,7 @@
 	 */
     L.Control.AddRemoveMarker = L.Control.extend({
         options: {
-            position: 'bottomleft',
+            position: 'topleft',
             addMarkerHtml: '<i class="material-icons" style="font-size:18px;vertical-align:middle;">add_location</i>',
             addMarkerTitle: "Add marker",
             removeMarkerHtml: '<i class="material-icons" style="font-size:18px;vertical-align:middle;-webkit-transform: rotate(180deg);-moz-transform: rotate(180deg);-ms-transform: rotate(1805deg);-o-transform: rotate(180deg);transform: rotate(180deg);">format_color_reset</i>',
