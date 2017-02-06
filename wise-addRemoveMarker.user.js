@@ -246,6 +246,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
 // PLUGIN START ////////////////////////////////////////////////////////
 // Plugin code is enclosed by a wrapper function to be called within a <script> tag.
     /**
+
 	 * Add and Remove Marker IITC plugin.  The plugin and its members can be accessed via
 	 * `window.plugin.addRemoveMarker`.  The "public" members are documented as module members while the more
 	 * friend and private members are documented as part of the `wrapper` function.
@@ -585,6 +586,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
         console.log(fname + ": Done.");
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
+
     /*
      * Set the required setup function that is called or handled by PLUGINEND code provided IITC build script.  
      * The function will be called if IITC is already loaded and, if not, saved for later execution.
