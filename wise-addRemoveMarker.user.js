@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2017.01.17
+// @version        1.2017.01.171
 // @self.spacename      https://github.com/hayeswise/iitc-addremovemarker/
 // @description    Adds an Add Marker and Remove Marker control to the toolbox.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js
@@ -17,19 +17,36 @@
 // MIT License, Copyright (c) 2016 Brian Hayes ("Hayeswise")
 // For more information, visit https://github.com/hayeswise/iitc-addremovemarker
 
-//
-// Standard IITC wrapper pattern (and JavaScript encapsulation pattern).
-// See last three lines of this file where it is used.
-//
+/**
+ * Closure function for Portals-in-Polygon.
+ *
+ * Standard IITC wrapper pattern used to create the plugin's closure when
+ * "installed" using `document.createElement("script".appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));`
+ * @param {Object} plugin_info Object containing Greasemonkey/Tampermonkey information about the plugin.
+ * @param {string} plugin_info.script Greasemonkey/Tampermonkey information about the plugin.
+ * @param {string} plugin_info.script.version GM_info.script.version.
+ * @param {string} plugin_info.script.name GM_info.script.name.
+ * @param {string} plugin_info.script.description GM_info.script.description.
+ */
 function wrapper(plugin_info) {
     //"use strict";
     // In case IITC is not available yet, define the base plugin object
     if (typeof window.plugin !== "function") {
         window.plugin = function () {};
     }
-    // Base context/spacename for plugin
+    /**
+	 * Add and Remove Marker IITC plugin.  The plugin and its members can be accessed via
+	 * `window.plugin.addRemoveMarker`.  The "public" members are documented as module members while the more
+	 * friend and private members are documented as part of the `wrapper` function.
+	 * @see {@link wrapper}
+	 * @module {function} addRemoveMarker
+	 */
     window.plugin.addRemoveMarker = function () {
     };
+	/**
+	 * Add and Remove Marker namespace.  `self` is set to `window.plugin.portalsinpolygons`.
+	 * @namespace
+	 */
     var self = window.plugin.addRemoveMarker;
     self.spacename = "addRemoveMarker";
 
@@ -216,12 +233,13 @@ function wrapper(plugin_info) {
     };
 
     /**
-     * Setup function called by IITC.
+     * Setup function.  Called if IITC is already loaded and if not, pushed for later execution.
      */
     self.setup = function init() {
         var fname = self.spacename + ".setup";
+		console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown");
         /**************************************************************************************************************
-         * L.Control.AddRemoveMarker Class
+         * L.Control.AddRemoveMarkerControl Class
          *************************************************************************************************************/
         /**
 	     * Creates a new map control for adding and removing markers.
@@ -229,16 +247,16 @@ function wrapper(plugin_info) {
 		 * Example usage:
 		 * ```
 		 * L.Map.mergeOptions({
-		 *    addRemoveMarkerControl: true // <== allows plugins to disable/enable the control - see L.Control.Zoomslider.js for example
+		 *    AddRemoveMarkerControl: true // <== allows plugins to disable/enable the control - see L.Control.Zoomslider.js for example
 		 * });
-		 * window.map.addControl(L.control.addRemoveMarker());
+		 * window.map.addControl(L.control.AddRemoveMarkerControl());
 		 * ```
 		 * <p>
 		 * Based on L.Control.Zoom from leaflet-src.js.
 		 * @class
 		 * @param {Object} [options] Optional options to configure the control.
 		 */
-        L.Control.AddRemoveMarker = L.Control.extend({
+        L.Control.AddRemoveMarkerControl = L.Control.extend({
             options: {
                 position: 'topleft',
                 addMarkerHtml: '<i class="material-icons" style="font-size:18px;vertical-align:middle;">add_location</i>',
@@ -310,11 +328,11 @@ function wrapper(plugin_info) {
         });
 
         /**
-		 * Factory for creating L.Control.AddRemoveMarker control objects.
+		 * Factory for creating L.Control.AddRemoveMarkerControl control objects.
 		 * @param {Object} [options] Optional options to configure the control.
 		 */
-        L.control.addRemoveMarker = function (options) {
-            return new L.Control.AddRemoveMarker(options);
+        L.control.AddRemoveMarkerControl = function (options) {
+            return new L.Control.AddRemoveMarkerControl(options);
         };
 
         //
@@ -337,7 +355,7 @@ function wrapper(plugin_info) {
         L.Map.mergeOptions({
             addRemoveMarkerControl: true // <== allows plugins to disable/enable the control - see L.Control.Zoomslider.js for example
         });
-        window.map.addControl(L.control.addRemoveMarker());
+        window.map.addControl(L.control.AddRemoveMarkerControl());
         // Add hook for portal details updated.
         window.addHook('portalDetailsUpdated', self.checkPortalDetailsUpdated);
         console.log(fname + ": Done.");
@@ -347,6 +365,11 @@ function wrapper(plugin_info) {
     /******************************************************************************************************************
      * ToolboxControlSection Class
      *****************************************************************************************************************/
+	/**
+	 * ToolboxControlSection Class.  Provides a standardized way of adding toolbox controls and grouping controls in 
+	 * the same "family".
+	 * @module {function} ToolboxControlSection
+	 */
     /**
 	 * Creates a new ToolboxControlSection.
 	 *
