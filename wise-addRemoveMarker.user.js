@@ -21,7 +21,7 @@
  * Establish varioius helpers and polyfills.
  * @module {function} helpers
  */
-(function(global) {
+;(function(global) {
     "use strict";
     if (typeof global.helpers !== "function") {
         global.helpers = function () {};
