@@ -604,8 +604,8 @@ plugin_info.pluginId = 'wise-addremovemarker';
           });
       if (missing) {
         if (retryCount > 0) {
-          console.log (fname + ": missing prerequistes, will retry in 500 milliseconds, retryCount is " + retryCount);
-          setTimeout(setup, 500, retryCount - 1);
+          console.log (fname + ": missing prerequistes, will retry in 1000 milliseconds, retryCount is " + retryCount);
+          setTimeout(setup, 1000, retryCount - 1);
         } else {
           console.log (fname + ": missing prerequistes, retryCount is " + retryCount);
           missing = !window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name);
