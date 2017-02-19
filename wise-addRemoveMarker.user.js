@@ -65,7 +65,7 @@
 	 * @param {Object[]} requiredPlugins An array of objects describing the required plugins.  Each
      * objecthas the properties `object` and `name`.  The `name` value appears in the alert if there are missing
 	 * plugins.
-     * @param {string} pluginName The name of the plugin for display in case of missing plugins.  Recommend using 
+     * @param {string} pluginName The name of the plugin for display in case of missing plugins.  Recommend using
      *    `plugin_info.script.name`.
 	 * <p>
 	 * For example,
@@ -78,7 +78,7 @@
      *   name: "My Other Plugin"
      * }]
      * ...
-     * if (window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name) { 
+     * if (window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name) {
      *    ...
 	 * ```
 	 * @returns {boolean}
@@ -457,18 +457,17 @@ plugin_info.pluginId = 'wise-addremovemarker';
     };
 
     /**
-     * Setup function to be called or handled by PLUGINEND code provided IITC build script.  
-     * The function will be called if IITC is already loaded and, if not, saved for later execution.
+     * Initialize/setup Add and Remove Marker plugin.
      */
-    self.setup = function init() {
-        var fname = self.spacename + ".setup";
+    self.init = function init() {
+        var fname = self.spacename + ".init";
 		console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
 
         /**************************************************************************************************************
          * L.Control.AddRemoveMarkerControl Class
          *************************************************************************************************************/
-        /**
-	     * Creates a new map control for adding and removing markers.
+   /**
+	   * Creates a new map control for adding and removing markers.
 		 * <p>
 		 * Example usage:
 		 * ```
@@ -564,9 +563,9 @@ plugin_info.pluginId = 'wise-addremovemarker';
         ///////////////////////////////////////////////////////////////////////
         // Start
         ///////////////////////////////////////////////////////////////////////
-        if (!window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name)) {
-            return;
-        }
+        //if (!window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name)) {
+        //    return;
+        //}
         // Link to Google Material icons.
         $("head").append('<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">');
         // Standard sytling for "wise" family of toolbox controls
@@ -587,8 +586,38 @@ plugin_info.pluginId = 'wise-addremovemarker';
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
 
+    /**
+     * Setup function to be called or handled by PLUGINEND code provided IITC build script.
+     * The function will be called if IITC is already loaded and, if not, saved for later execution.
+     * @param {Number} [retryCount] Initially this is undefined (not set).
+     *  While the retryCount is greater than zero, if the prerequistes are not
+     *  installed, setup will retry after 500 milliseconds.
+     */
+    self.setup = function (retryCount) {
+      var fname = self.spacename + ".init";
+      var missing;
+      console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
+
+      retryCount = (typeof retryCount === "undefined") ? 5 : retryCount);
+      missing = requiredPlugins.some(function(plugin) {
+            return (plugin.object === undefined);
+          });
+      if (missing) {
+        if (retryCount > 0) {
+          console.log (fname + ": missing prerequistes, will retry in 500 milliseconds, retryCount is " + retryCount);
+          setTimeout(setup, 500, retryCount - 1)
+        } else {
+          console.log (fname + ": missing prerequistes, retryCount is " + retryCount);
+          missing = !window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name));
+        }
+      }
+      if (!missing) {
+        self.init();
+      }
+    };
+
     /*
-     * Set the required setup function that is called or handled by PLUGINEND code provided IITC build script.  
+     * Set the required setup function that is called or handled by PLUGINEND code provided IITC build script.
      * The function will be called if IITC is already loaded and, if not, saved for later execution.
      */
     var setup = self.setup;
