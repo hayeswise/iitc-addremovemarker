@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2017.02.16
+// @version        1.2017.02.17
 // @self.spacename      https://github.com/hayeswise/ingress-intel-total-conversion
 // @description    Adds an Add Marker and Remove Marker map control and toolbox controls.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addremovemarker.user.js
@@ -218,7 +218,7 @@
     };
 }(window));
 
-
+;
 /**
  * Closure function for Add and Remove Marker.
  *
@@ -614,6 +614,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
       if (!missing) {
         self.init();
       }
+      console.log (fname + ": End");
     };
 
     /*
