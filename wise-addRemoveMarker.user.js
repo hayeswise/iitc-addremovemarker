@@ -600,8 +600,8 @@ plugin_info.pluginId = 'wise-addremovemarker';
       console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
 
       retryCount = (typeof retryCount === "undefined") ? 5 : retryCount;
-      missing = self.requiredPlugins.some(function(plugin) {
-            return (typeof window.plugin[object] === "undefined");
+      missing = self.requiredPlugins.some(function(metadata) {
+            return (typeof window.plugin[metadata.pluginKey] === "undefined");
           });
       if (missing) {
         if (retryCount > 0) {
