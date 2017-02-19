@@ -71,10 +71,10 @@
 	 * For example,
 	 * ```
 	 * self.requiredPlugins = [{
-     *   object: window.plugin.drawTools,
+     *   pluginKey: "drawTools",
      *   name: "draw tools"
      * }, {
-     *   object: window.plugin.myotherplugin,
+     *   pluginKey: "myotherplugin",
      *   name: "My Other Plugin"
      * }]
      * ...
@@ -86,9 +86,9 @@
     helpers.prerequisitePluginsInstalled = function (requiredPlugins, pluginName) {
         var missing = [],
             msg;
-        requiredPlugins.forEach(function(plugin) {
-            if (plugin.object === undefined) {
-                missing.push('"' + plugin.name + '"');
+        requiredPlugins.forEach(function(metadata) {
+            if (typeof window.plugin[metadata.pluginKey] === "undefined") {
+                missing.push('"' + metadata.name + '"');
             }
         });
         if (missing.length > 0) {
@@ -263,12 +263,12 @@ plugin_info.pluginId = 'wise-addremovemarker';
     self.spacename = "addRemoveMarker";
 
     /**
-	 * An array of objects describing the required plugins.  Each object has has the properties `object` and `name`.
+	 * An array of objects describing the required plugins.  Each object has has the properties `pluginKey` and `name`.
 	 * The `name` value appears in messaging if there are missing plugins.
-	 * @type {Array}<{object: Object, name: string}>
+	 * @type {Array}<{kye: string, name: string}>
 	 */
     self.requiredPlugins = [{
-        object: window.plugin.drawTools,
+        pluginKey: "drawTools",
         name: "draw tools"
     }];
 
@@ -401,6 +401,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
         var marker = null, //Leaflet Layer()
             portalDetails,
             title;
+
         // 1. Get the marker data. In this case, the poiMarker.checkPortalDetailLoaded() hook
         //    will have saved it when it was loaded into the sidebar portal details area.
         if (!self.portalDataInPortalDetails) {
@@ -600,12 +601,12 @@ plugin_info.pluginId = 'wise-addremovemarker';
 
       retryCount = (typeof retryCount === "undefined") ? 5 : retryCount;
       missing = self.requiredPlugins.some(function(plugin) {
-            return (plugin.object === undefined);
+            return (typeof window.plugin[object] === "undefined");
           });
       if (missing) {
         if (retryCount > 0) {
-          console.log (fname + ": missing prerequistes, will retry in 1000 milliseconds, retryCount is " + retryCount);
-          setTimeout(setup, 1000, retryCount - 1);
+          console.log (fname + ": missing prerequistes, will retry in 500 milliseconds, retryCount is " + retryCount);
+          setTimeout(setup, 500, retryCount - 1);
         } else {
           console.log (fname + ": missing prerequistes, retryCount is " + retryCount);
           missing = !window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name);
