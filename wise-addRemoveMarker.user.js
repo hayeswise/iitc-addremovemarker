@@ -594,7 +594,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
      *  installed, setup will retry after 500 milliseconds.
      */
     self.setup = function (retryCount) {
-      var fname = self.spacename + ".init";
+      var fname = self.spacename + ".setup";
       var missing;
       console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
 
