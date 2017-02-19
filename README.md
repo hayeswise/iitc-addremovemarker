@@ -14,7 +14,7 @@ Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion
 # Installation
 I recommend you install Tampermonkey if you are using Chrome or Greasemonkey if you are using Firefox.
 
-Download the latest version (https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wait-for-prerequisites/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
+Download the latest version  (https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wait-for-prerequisites/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
 
 Mobile add-l-controls(https://github.com/hayeswise/iitc-addremovemarker/raw/add-l-controls/wise-addRemoveMarker.user.js)
 
