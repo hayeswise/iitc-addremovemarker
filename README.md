@@ -15,7 +15,7 @@ A short [User Guide](https://github.com/hayeswise/iitc-addremovemarker/wiki/) is
 # Installation
 I recommend you install Tampermonkey if you are using Chrome or Greasemonkey if you are using Firefox.
 
-Download the latest version [**here**](https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
+Download the latest version [**here**](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wait-for-prerequisites/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
 
 Mobile add-l-controls(https://github.com/hayeswise/iitc-addremovemarker/raw/add-l-controls/wise-addRemoveMarker.user.js)
 
@@ -29,5 +29,3 @@ _Open the Tampermonkey menu and choose "Check for userscript updates". If you ha
 ### Firefox and Greasemonkey
 
 _Open the Greasemonkey menu and choose "Manage user scripts". Now click the cog icon and choose "Check for updates". However, sometimes Greasemonkey fails to update all scripts. Check the date+time listed at the start of the description (e.g. "[jonatkins-2013-08-23-042102]") and if any have failed to update then manually download from the list below. Once updated, reload the Intel map and the new version will be active._
-
-
