@@ -3,7 +3,7 @@ Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion
 
 [Ingress Planner](http://www.ingressplanner.net/) is highly recommended so that you can manage seperate plans.
 
-![POI Marker controls](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wait-for-prerequisites/wise-addRemoveMarker.user.js) is available.
+![POI Marker controls](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wise-addRemoveMarker.user.js) is available.
 
 
 # Prerequistites
@@ -14,9 +14,8 @@ Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion
 # Installation
 I recommend you install Tampermonkey if you are using Chrome or Greasemonkey if you are using Firefox.
 
-Download the latest version  (https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wait-for-prerequisites/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
+Download the latest version [**here**](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wise-addRemoveMarker.user.js).  Tampermonkey or Greasemonkey will provide the install/reinstall page and install (or reinstall) button.
 
-Mobile add-l-controls(https://github.com/hayeswise/iitc-addremovemarker/raw/add-l-controls/wise-addRemoveMarker.user.js)
 
 ## Updating
 If the plugin is already installed, it's easy to update in most cases.  Either click on the download link, above, or follow the these instructions from the IITC website:
