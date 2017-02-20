@@ -3,7 +3,7 @@ Add Marker and Remove Marker is a plugin for the [Ingress Intel Total Conversion
 
 [Ingress Planner](http://www.ingressplanner.net/) is highly recommended so that you can manage seperate plans.
 
-![POI Marker controls](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/wise-addRemoveMarker.user.js) is available.
+![POI Marker controls](https://raw.githubusercontent.com/hayeswise/iitc-addremovemarker/doc/addRemoveMarker-controls.png) is available.
 
 
 # Prerequistites
