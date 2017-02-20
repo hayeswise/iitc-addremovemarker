@@ -2,7 +2,7 @@
 // @id             iitc-plugin-add-remove-marker@hayeswise
 // @name           IITC plugin: Add and Remove Marker
 // @category       Layer
-// @version        1.2017.02.16
+// @version        1.2017.02.17
 // @self.spacename      https://github.com/hayeswise/ingress-intel-total-conversion
 // @description    Adds an Add Marker and Remove Marker map control and toolbox controls.
 // @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addremovemarker.user.js
@@ -65,20 +65,20 @@
 	 * @param {Object[]} requiredPlugins An array of objects describing the required plugins.  Each
      * objecthas the properties `object` and `name`.  The `name` value appears in the alert if there are missing
 	 * plugins.
-     * @param {string} pluginName The name of the plugin for display in case of missing plugins.  Recommend using 
+     * @param {string} pluginName The name of the plugin for display in case of missing plugins.  Recommend using
      *    `plugin_info.script.name`.
 	 * <p>
 	 * For example,
 	 * ```
 	 * self.requiredPlugins = [{
-     *   object: window.plugin.drawTools,
+     *   pluginKey: "drawTools",
      *   name: "draw tools"
      * }, {
-     *   object: window.plugin.myotherplugin,
+     *   pluginKey: "myotherplugin",
      *   name: "My Other Plugin"
      * }]
      * ...
-     * if (window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name) { 
+     * if (window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name) {
      *    ...
 	 * ```
 	 * @returns {boolean}
@@ -86,9 +86,9 @@
     helpers.prerequisitePluginsInstalled = function (requiredPlugins, pluginName) {
         var missing = [],
             msg;
-        requiredPlugins.forEach(function(plugin) {
-            if (plugin.object === undefined) {
-                missing.push('"' + plugin.name + '"');
+        requiredPlugins.forEach(function(metadata) {
+            if (typeof window.plugin[metadata.pluginKey] === "undefined") {
+                missing.push('"' + metadata.name + '"');
             }
         });
         if (missing.length > 0) {
@@ -218,7 +218,7 @@
     };
 }(window));
 
-
+;
 /**
  * Closure function for Add and Remove Marker.
  *
@@ -263,12 +263,12 @@ plugin_info.pluginId = 'wise-addremovemarker';
     self.spacename = "addRemoveMarker";
 
     /**
-	 * An array of objects describing the required plugins.  Each object has has the properties `object` and `name`.
+	 * An array of objects describing the required plugins.  Each object has has the properties `pluginKey` and `name`.
 	 * The `name` value appears in messaging if there are missing plugins.
-	 * @type {Array}<{object: Object, name: string}>
+	 * @type {Array}<{kye: string, name: string}>
 	 */
     self.requiredPlugins = [{
-        object: window.plugin.drawTools,
+        pluginKey: "drawTools",
         name: "draw tools"
     }];
 
@@ -401,6 +401,7 @@ plugin_info.pluginId = 'wise-addremovemarker';
         var marker = null, //Leaflet Layer()
             portalDetails,
             title;
+
         // 1. Get the marker data. In this case, the poiMarker.checkPortalDetailLoaded() hook
         //    will have saved it when it was loaded into the sidebar portal details area.
         if (!self.portalDataInPortalDetails) {
@@ -457,18 +458,17 @@ plugin_info.pluginId = 'wise-addremovemarker';
     };
 
     /**
-     * Setup function to be called or handled by PLUGINEND code provided IITC build script.  
-     * The function will be called if IITC is already loaded and, if not, saved for later execution.
+     * Initialize/setup Add and Remove Marker plugin.
      */
-    self.setup = function init() {
-        var fname = self.spacename + ".setup";
+    self.init = function init() {
+        var fname = self.spacename + ".init";
 		console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
 
         /**************************************************************************************************************
          * L.Control.AddRemoveMarkerControl Class
          *************************************************************************************************************/
-        /**
-	     * Creates a new map control for adding and removing markers.
+   /**
+	   * Creates a new map control for adding and removing markers.
 		 * <p>
 		 * Example usage:
 		 * ```
@@ -564,9 +564,9 @@ plugin_info.pluginId = 'wise-addremovemarker';
         ///////////////////////////////////////////////////////////////////////
         // Start
         ///////////////////////////////////////////////////////////////////////
-        if (!window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name)) {
-            return;
-        }
+        //if (!window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name)) {
+        //    return;
+        //}
         // Link to Google Material icons.
         $("head").append('<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">');
         // Standard sytling for "wise" family of toolbox controls
@@ -587,8 +587,39 @@ plugin_info.pluginId = 'wise-addremovemarker';
         delete self.setup; // Delete setup to ensure init can't be run again.
     };
 
+    /**
+     * Setup function to be called or handled by PLUGINEND code provided IITC build script.
+     * The function will be called if IITC is already loaded and, if not, saved for later execution.
+     * @param {Number} [retryCount] Initially this is undefined (not set).
+     *  While the retryCount is greater than zero, if the prerequistes are not
+     *  installed, setup will retry after 500 milliseconds.
+     */
+    self.setup = function (retryCount) {
+      var fname = self.spacename + ".setup";
+      var missing;
+      console.log (fname + ": Start, version " + (!!plugin_info ? plugin_info.script.version : "unknown"));
+
+      retryCount = (typeof retryCount === "undefined") ? 5 : retryCount;
+      missing = self.requiredPlugins.some(function(metadata) {
+            return (typeof window.plugin[metadata.pluginKey] === "undefined");
+          });
+      if (missing) {
+        if (retryCount > 0) {
+          console.log (fname + ": missing prerequistes, will retry in 500 milliseconds, retryCount is " + retryCount);
+          setTimeout(setup, 500, retryCount - 1);
+        } else {
+          console.log (fname + ": missing prerequistes, retryCount is " + retryCount);
+          missing = !window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name);
+        }
+      }
+      if (!missing) {
+        self.init();
+      }
+      console.log (fname + ": End");
+    };
+
     /*
-     * Set the required setup function that is called or handled by PLUGINEND code provided IITC build script.  
+     * Set the required setup function that is called or handled by PLUGINEND code provided IITC build script.
      * The function will be called if IITC is already loaded and, if not, saved for later execution.
      */
     var setup = self.setup;
