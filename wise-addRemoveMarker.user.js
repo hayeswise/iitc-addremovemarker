@@ -5,8 +5,8 @@
 // @version        1.2017.02.18
 // @self.spacename      https://github.com/hayeswise/ingress-intel-total-conversion
 // @description    Adds an Add Marker and Remove Marker map control and toolbox controls.
-// @updateURL      https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addremovemarker.user.js
-// @downloadURL    https://github.com/hayeswise/iitc-addremovemarker/raw/master/wise-addremovemarker.user.js
+// @updateURL      https://github.com/hayeswise/iitc-shadowops/raw/master/dist/plugins/wise-addremovemarker.meta.js
+// @downloadURL    https://github.com/hayeswise/iitc-shadowops/raw/master/dist/plugins/wise-addremovemarker.user.js
 // @include        https://*.ingress.com/intel*
 // @include        http://*.ingress.com/intel*
 // @match          https://*.ingress.com/intel*
@@ -18,217 +18,313 @@
 // For more information, visit https://github.com/hayeswise/iitc-addremovemarker
 
 /**
- * Establish varioius helpers and polyfills.
- * @module {function} helpers
+ * Required Plugins helper.
+ * @module {function} "window.helper.requiredPlugins"
  */
-;(function(global) {
-    "use strict";
-    if (typeof global.helpers !== "function") {
-        global.helpers = function () {};
+ ;(function () {
+  "use strict";
+  /**
+   * Information about a plugin.  The `pluginKey` is the property name of the
+   * plugin in the `window.plugin` associative array.  The `name` value is used
+   * in messaging about the plugins (e.g., if it is missing).
+   * @typedef PluginMetaData
+   * @type {Object}
+   * @property {String} pluginKey The property name of the plugin in
+   *  `window.plugin`.
+   * @property {String} name A title or short name of the plugin.
+   * @example
+   * {
+   *   pluginKey: "drawTools",
+   *   name: "draw tools"
+   * }
+   */
+  // Aggregate helpers in the window.helper object
+  if (typeof window.helper !== "function") {
+    window.helper = function () {};
+  }
+  /**
+   * Required Plugins namespace.
+   * @alias "window.helper.requiredPlugins"
+   * @variation 2
+   */
+  var self = window.helper.requiredPlugins;
+  self.spacename = "helper.requiredPlugins";
+  self.version = "0.1.0";
+
+  /**
+   * Returns true if all the prerequisite plugins are installed.
+   * @param {PluginMetaData[]} prerequisites An array of
+   * `RequiredPluginMetaData`.
+   * @returns {boolean} Returns `true` if all the prerequisite plugins are
+   *  installed; otherwise, returns `false`.
+   * @example
+   * window.plugin.myPlugin.requiredPlugins = [{
+   *   pluginKey: window.plugin.drawTools,
+   *   name: "draw tools"
+   * }, {
+   *   pluginKey: window.plugin.myotherplugin,
+   *   name: "My Other Plugin"
+   * }]
+   * ...
+   * if (window.helper.requiredPlugins.areMissing(window.plugin.myPlugin.requiredPlugins)) {
+   *    return;
+   * }
+   */
+  self.areMissing = function (prerequisites) {
+    var areMissing;
+    areMissing = prerequisites.some(function (metadata) {
+      return (typeof window.plugin[metadata.pluginKey] === "undefined");
+    });
+    return areMissing;
+  };
+
+  /**
+   * Checks if the prerequisite/required plugins are installed.
+   * @param {PluginMetaData[]} requiredPlugins An array of plugin meta-data on
+   * the required plugins.
+   * @returns {PluginMetaData[]}
+   * @example
+   * window.plugin.myPlugin.requiredPlugins = [{
+   *   pluginKey: window.plugin.drawTools,
+   *   name: "draw tools"
+   * }, {
+   *   pluginKey: window.plugin.myotherplugin,
+   *   name: "My Other Plugin"
+   * }]
+   * ...
+   * var missing = window.helper.requiredPlugins.missingPluginNames(window.plugin.myPlugin.requiredPlugins);
+   * if (missing.length > 0) {
+   *   msg = 'IITC plugin "' + pluginName + '" requires IITC plugin' + ((missing.length === 1) ? ' ' : 's ') +
+   *     ((missing.length === 1) ? missing[0] : (missing.slice(0,-1).join(", ") + " and " + missing[missing.length - 1])) + '.';
+   *   console.warn(msg);
+   *   alert(msg);
+   * }
+   */
+  self.missingPluginNames = function (requiredPlugins) {
+    var missing = [];
+    requiredPlugins.forEach(function (metadata) {
+      if (metadata.pluginKey === undefined) {
+        missing.push('"' + metadata.name + '"');
+      }
+    });
+    return missing;
+  };
+
+  /**
+   * Checks if the pre-requisite plugins are installed.  If one or more requisites are not installed, an alert is
+   * displayed.
+   * @param {RequiredPluginMetaData[]} requiredPlugins An array of plugin meta-data on the required plugins.
+   * @param {string} pluginName The name of the plugin requiring the required plugins.  Recommend using
+   *    `plugin_info.script.name`.
+   * @returns {boolean}
+   * @example
+   * window.plugin.myPlugin.requiredPlugins = [{
+   *   pluginKey: window.plugin.drawTools,
+   *   name: "draw tools"
+   * }, {
+   *   pluginKey: window.plugin.myotherplugin,
+   *   name: "My Other Plugin"
+   * }]
+   * ...
+   * if (!window.helper.requiredPlugins.alertIfNotInstalled(window.plugin.myPlugin.requiredPlugins, plugin_info.script.name) {
+   *    return;
+   * }
+   */
+  self.alertIfNotInstalled = function (requiredPlugins, pluginName) {
+    var missing = [],
+      msg;
+    missing = self.missingPluginNames(requiredPlugins);
+    if (missing.length > 0) {
+      msg = 'IITC plugin "' + pluginName + '" requires IITC plugin' + ((missing.length === 1) ? ' ' : 's ') +
+        ((missing.length === 1) ? missing[0] : (missing.slice(0, -1).join(", ") + " and " + missing[missing.length - 1])) + '.';
+      window.console.warn(msg);
+      alert(msg);
     }
-    /**
-	 * Plugin Helpers namespace.
-	 * @namespace
-	 */
-    var helpers = global.helpers;
-    var spacename = "helpers";
+    return (missing.length === 0);
+  };
+}());
 
-    // Polyfill Array.find if not available
-    // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
-    if (!Array.prototype.find) {
-        Object.defineProperty(Array.prototype, 'find', {
-            value: function(predicate) {
-                if (this === null) {
-                    throw new TypeError('Array.prototype.find called on null or undefined');
-                }
-                if (typeof predicate !== 'function') {
-                    throw new TypeError('predicate must be a function');
-                }
-                var list = Object(this);
-                var length = list.length >>> 0;
-                var thisArg = arguments[1];
-                var value;
+/**
+ * Toolbox Control Section helper.
+ * @module {function} "window.helper.ToolboxControlSection"
+ */
+;(function () {
+  "use strict";
+  // Aggregate helpers in the window.helper object
+  if (typeof window.helper !== "function") {
+    window.helper = function () {};
+  }
+  /**
+   * Toolbox Control Section namespace.
+   * @alias "window.helper.ToolboxControlSection"
+   * @variation 2
+   */
+  var self = window.helper.ToolboxControlSection;
+  self.version = "0.1.0";
 
-                for (var i = 0; i < length; i++) {
-                    value = list[i];
-                    if (predicate.call(thisArg, value, i, list)) {
-                        return value;
-                    }
-                }
-                return undefined;
-            }
-        });
+  /**
+   * ToolboxControlSection Class.  Provides a standardized way of adding toolbox controls and grouping controls in
+   * the same "family".
+   */
+  /**
+   * Creates a new ToolboxControlSection.
+   *
+   * @class
+   * @param {String|Element|Text|Array|jQuery} content A object suitable for passing to `jQuery.append()`: a
+   * 	DOM element, text node, array of elements and text nodes, HTML string, or jQuery object to insert at the end of
+   *	each element in the set of matched elements.
+   * @param {String} controlSectionClass The class name for a section of controls, typically in a `div` tag.
+   * @param {String} [controlClass] An optional class name of a simple control or collection of controls.
+   * @property {String} defaultStyle Global CSS for the toolbox control section.  Set
+   *  using `setStyle()`.
+   * @property {String} style Global CSS for the toolbox control section.  Set
+   *  using `setStyle()`.
+   */
+  self.ToolboxControlSection = function (content, controlSectionClass, controlClass) {
+    this.controlSectionClass = controlSectionClass;
+    this.controlClass = controlClass;
+    this.merged = false;
+    this.jQueryObj = jQuery('<div>').append(content).addClass(controlSectionClass);
+  };
+
+  // Default style
+  self.ToolboxControlSection.defaultStyle = "div.wise-toolbox-control-section {color:#00C5FF;text-align:center;width:fit-content;border-top: 1px solid #20A8B1;border-bottom: 1px solid #20A8B1;}";
+  self.ToolboxControlSection.style = undefined;
+  /**
+   * See jQuery `.attr()` function.
+   *
+   * @returns {String}
+   * @todo Consider removing this.
+   */
+  self.ToolboxControlSection.prototype.attr = function (attributeNameOrAttributes, valueOrFunction) {
+    if (typeof valueOrFunction === 'undefined') {
+      return this.jQueryObj.attr(attributeNameOrAttributes);
+    } else {
+      return this.jQueryObj.attr(attributeNameOrAttributes, valueOrFunction);
     }
-    /**
-	 * Checks if the pre-requisite plugins are installed.  If one or more requisites are not installed, an alert is
-	 * displayed.
-	 * @param {Object[]} requiredPlugins An array of objects describing the required plugins.  Each
-     * objecthas the properties `object` and `name`.  The `name` value appears in the alert if there are missing
-	 * plugins.
-     * @param {string} pluginName The name of the plugin for display in case of missing plugins.  Recommend using
-     *    `plugin_info.script.name`.
-	 * <p>
-	 * For example,
-	 * ```
-	 * self.requiredPlugins = [{
-     *   pluginKey: "drawTools",
-     *   name: "draw tools"
-     * }, {
-     *   pluginKey: "myotherplugin",
-     *   name: "My Other Plugin"
-     * }]
-     * ...
-     * if (window.helpers.prerequisitePluginsInstalled(self.requiredPlugins, plugin_info.script.name) {
-     *    ...
-	 * ```
-	 * @returns {boolean}
-	 */
-    helpers.prerequisitePluginsInstalled = function (requiredPlugins, pluginName) {
-        var missing = [],
-            msg;
-        requiredPlugins.forEach(function(metadata) {
-            if (typeof window.plugin[metadata.pluginKey] === "undefined") {
-                missing.push('"' + metadata.name + '"');
-            }
+  };
+
+  /**
+   * Appends toolbox controls with the same toolbox control section class and toolbox control class.
+   * <p>
+   * Merge
+   * ```
+   * <div class="myControlFamily">
+   *    ...this control...
+   * </div>
+   * ```
+   * with
+   * ```
+   * <div class="myControlFamily">
+   *    ...other control...
+   * </div>
+   * ```
+   * to get
+   * ```
+   * <div class="myControlFamily">
+   *    ...this control...
+   *    ...other control...
+   * </div>
+   * ```
+   */
+  self.ToolboxControlSection.prototype.mergeWithFamily = function () {
+    var controlFamily,
+      that;
+    if (!this.merged) {
+      that = this;
+      controlFamily = jQuery('.' + this.controlSectionClass);
+      if (controlFamily.length > 0) {
+        controlFamily.each(function () {
+          var jQobj = jQuery(this);
+          jQobj.css("border-style", "none");
+          that.jQueryObj.append(jQobj.removeClass(that.controlSectionClass).addClass(that.controlSectionClass + "-moved")); // remove oringal section so any subsequent merges have a single control section to deal with
         });
-        if (missing.length > 0) {
-            msg = 'IITC plugin "' + pluginName + '" requires IITC plugin' + ((missing.length === 1) ? ' ' : 's ') +
-                ((missing.length === 1) ? missing[0] : (missing.slice(0,-1).join(", ") + " and " + missing[missing.length - 1])) + '.';
-            console.warn(msg);
-            alert(msg);
+        this.merged = true;
+      }
+      if (typeof this.controlClass !== 'undefined') {
+        controlFamily = jQuery(':not(.' + this.controlSectionClass + ') .' + this.controlClass);
+        if (controlFamily.length > 0) {
+          controlFamily.each(function () {
+            that.jQueryObj.append(jQuery(this));
+          });
+          this.merged = true;
         }
-        return (missing.length === 0);
-    };
+      }
+    }
+    return this.jQueryObj;
+  };
 
-    /******************************************************************************************************************
-     * ToolboxControlSection Class
-     *****************************************************************************************************************/
-	/**
-	 * ToolboxControlSection Class.  Provides a standardized way of adding toolbox controls and grouping controls in
-	 * the same "family".
-	 * @module {function} ToolboxControlSection
-	 */
-    /**
-	 * Creates a new ToolboxControlSection.
-	 *
-	 * @class
-	 * @param {String|Element|Text|Array|jQuery} content A object suitable for passing to `jQuery.append()`: a
-	 * 	DOM element, text node, array of elements and text nodes, HTML string, or jQuery object to insert at the end of
-	 *	each element in the set of matched elements.
-	 * @param {String} controlSectionClass The class name for a section of controls, typically in a `div` tag.
-	 * @param {String} [controlClass] An optional class name of a simple control or collection of controls.
-	 */
-    helpers.ToolboxControlSection = function (content, controlSectionClass, controlClass) {
-        this.controlSectionClass = controlSectionClass;
-        this.controlClass = controlClass;
-        this.merged = false;
-        this.jQueryObj = jQuery('<div>').append(content).addClass(controlSectionClass);
-    };
+  /**
+   * Sets the documents's styling.  Will not add the style if previously used.
+   * @param {String} [styling] CSS styles.
+   */
+  self.ToolboxControlSection.prototype.setStyle = function (styling) {
+    if (typeof styling === "undefined") {
+      styling = helpers.ToolboxControlSection.defaultStyle;
+    }
+    if (typeof helpers.ToolboxControlSection.style === 'undefined' || (helpers.ToolboxControlSection.style !== styling)) {
+      helpers.ToolboxControlSection.style = styling;
+      jQuery("<style>")
+        .prop("type", "text/css")
+        .html(styling)
+        .appendTo("head");
+    }
+  };
 
-    /**
-	 * See jQuery `.attr()` function.
-	 *
-	 * @returns {String}
-	 * @todo Consider removing this.
-	 */
-    helpers.ToolboxControlSection.prototype.attr = function (attributeNameOrAttributes, valueOrFunction) {
-        if (typeof valueOrFunction === 'undefined') {
-            return this.jQueryObj.attr(attributeNameOrAttributes);
-        } else {
-            return this.jQueryObj.attr(attributeNameOrAttributes, valueOrFunction);
-        }
-    };
-
-    /**
-	 * Appends toolbox controls with the same toolbox control section class and toolbox control class.
-	 * <p>
-	 * Merge
-	 * ```
-	 * <div class="myControlFamily">
-     *    ...this control...
-	 * </div>
-	 * ```
-	 * with
-	 * ```
-	 * <div class="myControlFamily">
-     *    ...other control...
-	 * </div>
-	 * ```
-	 * to get
-	 * ```
-	 * <div class="myControlFamily">
-     *    ...this control...
-     *    ...other control...
-	 * </div>
-	 * ```
-	 */
-    helpers.ToolboxControlSection.prototype.mergeWithFamily = function () {
-        var controlFamily,
-            that;
-        if (!this.merged) {
-            that = this;
-            controlFamily = jQuery('.' + this.controlSectionClass);
-            if (controlFamily.length > 0) {
-                controlFamily.each(function() {
-                    var jQobj = jQuery(this);
-                    jQobj.css("border-style", "none");
-                    that.jQueryObj.append(jQobj.removeClass(that.controlSectionClass).addClass(that.controlSectionClass + "-moved")); // remove oringal section so any subsequent merges have a single control section to deal with
-                });
-                this.merged = true;
-            }
-            if (typeof this.controlClass !== 'undefined') {
-                controlFamily = jQuery(':not(.' + this.controlSectionClass + ') .' + this.controlClass);
-                if (controlFamily.length > 0) {
-                    controlFamily.each(function() {
-                        that.jQueryObj.append(jQuery(this));
-                    });
-                    this.merged = true;
-                }
-            }
-        }
-        return this.jQueryObj;
-    };
-
-    /**
-	 * Sets the documents's styling.  Will not add the style if previously used.
-	 * @param {String} [styling] CSS styles.
-	 */
-	helpers.ToolboxControlSection.setStyle = function (styling) {
-		styling = (typeof styling === 'undefined') ? styling : "div.wise-toolbox-control-section {color:#00C5FF;text-align:center;width:fit-content;border-top: 1px solid #20A8B1;border-bottom: 1px solid #20A8B1;}";
-        if (typeof helpers.ToolboxControlSection.style === 'undefined' || (helpers.ToolboxControlSection.style !== styling)) {
-			helpers.ToolboxControlSection.style = styling;
-            jQuery("<style>")
-				.prop("type", "text/css")
-				.html(styling)
-				.appendTo("head");
-        }
-    };
-
-    /**
-	 * Override valueOf so that we get the desired behavior of getting the jQuery object when we access an object
-	 * directly.  For example,
-	 * ```
-	 * $("#toolbox").append(new ToolboxControlSection(html, "myfamily-control-section", "myfamily-control").mergeWithFamily();
-	 * ```
-	 *
-	 * @returns {Object} jQuery object.
-	 */
-    helpers.ToolboxControlSection.prototype.valueOf = function () {
-        return this.jQueryObj;
-    };
-}(window));
+  /**
+   * Override valueOf so that we get the desired behavior of getting the jQuery object when we access an object
+   * directly.
+   * @returns {Object} jQuery object.
+   * @example
+   * $("#toolbox").append(new ToolboxControlSection(html, "myfamily-control-section", "myfamily-control").mergeWithFamily();
+   */
+  self.ToolboxControlSection.prototype.valueOf = function () {
+    return this.jQueryObj;
+  };
+}());
 
 ;
 /**
+ * Greasemonkey/Tampermonkey information about the plugin.
+ * @typedef ScriptInfo
+ * @type {Object}
+ * @property {String} version This is set to GM_info.script.version.
+ * @property {String} name This is set to GM_info.script.name.
+ * @property {String} description This is set to GM_info.script.description.
+ */
+/**
+ * Plugin information which includes the Greasemonkey/Tampermonkey information about the plugin.
+ * @typedef PluginInfo
+ * @type {Object}
+ * @property {ScriptInfo} script Greasemonkey/Tampermonkey information about the plugin.
+ */
+/**
+ * Add and Remove Marker IITC plugin.  The plugin and its members can be accessed via
+ * `window.plugin.addRemoveMarker`.
+ * @module {function} "window.plugin.addRemoveMarker"
+*/
+/**
+ * An object containing information about the plugin. It is provided by the IITC
+ * `portalDetailsUpdated` runhook.
+ * @typedef ExtendedPortalData
+ * @type {Object}
+ * @property {String} guid The portal's globally unique identifier.
+ * @property {PortalEditingAndOptions} portal
+ * @property {Object} portalData
+ * @property {Object} portalDetails
+ */
+/**
+ * @typedef PortalEditingAndOptions
+ * @type {Object}
+ * @property {Object} editing
+ * @property {Object} options This contains the data object which a superset of the PortalData object.
+ */
+/**
  * Closure function for Add and Remove Marker.
- *
+ * <p>
  * Standard IITC wrapper pattern used to create the plugin's closure when
  * "installed" using `document.createElement("script".appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));`
- * @param {Object} plugin_info Object containing Greasemonkey/Tampermonkey information about the plugin.
- * @param {string} plugin_info.script Greasemonkey/Tampermonkey information about the plugin.
- * @param {string} plugin_info.script.version GM_info.script.version.
- * @param {string} plugin_info.script.name GM_info.script.name.
- * @param {string} plugin_info.script.description GM_info.script.description.
+ * @param {PluginInfo} plugin_info Plugin information object provided the standard IITC PLUGINEND code.
  */
 
 function wrapper(plugin_info) {
@@ -238,7 +334,7 @@ if(typeof window.plugin !== 'function') window.plugin = function() {};
 //PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
 //(leaving them in place might break the 'About IITC' page or break update checks)
 plugin_info.buildName = 'wise';
-plugin_info.dateTimeVersion = '20170206.53303';
+plugin_info.dateTimeVersion = '20170225.64239';
 plugin_info.pluginId = 'wise-addremovemarker';
 //END PLUGIN AUTHORS NOTE
 
@@ -256,16 +352,16 @@ plugin_info.pluginId = 'wise-addremovemarker';
     window.plugin.addRemoveMarker = function () {
     };
 	/**
-	 * Add and Remove Marker namespace.  `self` is set to `window.plugin.portalsinpolygons`.
-	 * @namespace
+	 * Add and Remove Marker namespace.  `self` is set to `window.plugin.addRemoveMarker`.
+	 * @alias "window.plugin.addRemoveMarker"
+     * @variation 2
 	 */
     var self = window.plugin.addRemoveMarker;
     self.spacename = "addRemoveMarker";
 
     /**
-	 * An array of objects describing the required plugins.  Each object has has the properties `pluginKey` and `name`.
-	 * The `name` value appears in messaging if there are missing plugins.
-	 * @type {Array}<{kye: string, name: string}>
+	 * An array of objects describing the required plugins.
+     * @type {RequiredPluginMetaData[]} Array of required plugin meta-data.
 	 */
     self.requiredPlugins = [{
         pluginKey: "drawTools",
@@ -273,6 +369,13 @@ plugin_info.pluginId = 'wise-addremovemarker';
     }];
 
     // Plugin level properties
+    /**
+      * When the extended portal details are loaded into the portal details
+      * section, the `checkPortalDetailsUpdated()` run hook will save the
+      * extended portal details object here.
+      *
+      * @type {ExtendedPortalData}
+      */
     self.portalDataInPortalDetails = null;
 
     /**
@@ -458,7 +561,8 @@ plugin_info.pluginId = 'wise-addremovemarker';
     };
 
     /**
-     * Initialize/setup Add and Remove Marker plugin.
+     * Setup function to be called or handled by PLUGINEND code provided IITC build script.
+     * The function will be called if IITC is already loaded and, if not, saved for later execution.
      */
     self.init = function init() {
         var fname = self.spacename + ".init";
@@ -637,3 +741,5 @@ var info = {};
 if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) info.script = {version: GM_info.script.version, name: GM_info.script.name, description: GM_info.script.description };
 script.appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));
 (document.body || document.head || document.documentElement).appendChild(script);
+
+
